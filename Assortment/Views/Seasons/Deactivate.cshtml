@@ -1,0 +1,19 @@
+﻿@using Assortment.Web.Extensions
+@using Assortment.Domain.Entities
+@model Season
+@{
+    ViewData["Title"] = "Деактивировать сезон";
+}
+
+<h1>Деактивировать сезон?</h1>
+
+<div class="alert alert-warning">
+    Сезон <strong>@Model.Name</strong> (@Model.Kind.GetDisplayName()) будет помечен как неактивный.
+    Данные не удаляются — на сезон могут ссылаться модели и коллекции.
+</div>
+
+<form asp-action="Deactivate" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Деактивировать</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>

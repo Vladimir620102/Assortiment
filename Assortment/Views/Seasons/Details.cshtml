@@ -1,0 +1,50 @@
+﻿@using Assortment.Web.Extensions
+@using Assortment.Domain.Entities
+
+@model Season
+@{
+    ViewData["Title"] = $"Сезон: {Model.Name}";
+}
+
+<h1>@Model.Name</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Тип</dt>
+    <dd class="col-sm-9">@Model.Kind.GetDisplayName()</dd>
+
+    <dt class="col-sm-3">Перевод</dt>
+    <dd class="col-sm-9">@Model.Translate</dd>
+
+    <dt class="col-sm-3">Внешний код</dt>
+    <dd class="col-sm-9">@Model.ExternalCode</dd>
+
+    <dt class="col-sm-3">Название для этикетки</dt>
+    <dd class="col-sm-9">@Model.LabelName</dd>
+
+    <dt class="col-sm-3">Дата истечения</dt>
+    <dd class="col-sm-9">@(Model.ExpireDate?.ToString("dd.MM.yyyy") ?? "—")</dd>
+
+    <dt class="col-sm-3">Активен</dt>
+    <dd class="col-sm-9">
+        @if (Model.IsActive)
+        {
+            <span class="badge bg-success">Да</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary">Нет</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Создан</dt>
+    <dd class="col-sm-9">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+    <dt class="col-sm-3">Обновлён</dt>
+    <dd class="col-sm-9">@(Model.UpdatedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</dd>
+
+    <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9"><code>@Model.Id</code></dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Изменить</a>
+<a asp-action="Index" class="btn btn-secondary">К списку</a>

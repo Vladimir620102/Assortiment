@@ -1,0 +1,27 @@
+﻿@model List<Assortment.Web.ViewComponents.MenuItem>
+
+<ul class="nav flex-column">
+    @foreach (var item in Model)
+    {
+        <li class="nav-item">
+            @if (item.Children.Any())
+            {
+                <span class="nav-link text-uppercase small text-muted">
+                    <i class="@item.Icon"></i> @item.Title
+                </span>
+                @foreach (var child in item.Children)
+                {
+                    <a class="nav-link ps-4" asp-controller="@child.Controller" asp-action="@child.Action">
+                        @child.Title
+                    </a>
+                }
+            }
+            else
+            {
+                <a class="nav-link" asp-controller="@item.Controller" asp-action="@item.Action">
+                    <i class="@item.Icon"></i> @item.Title
+                </a>
+            }
+        </li>
+    }
+</ul>

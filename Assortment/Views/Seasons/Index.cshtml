@@ -1,0 +1,104 @@
+﻿@using Assortment.Web.Extensions
+@using Assortment.Domain.Entities
+@model List<Season>
+@{
+    ViewData["Title"] = "Сезоны";
+    var kinds = Enum.GetValues<SeasonKind>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Сезоны</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Добавить
+    </a>
+</div>
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="search" value="@ViewBag.Search" class="form-control"
+               placeholder="Поиск по названию..." />
+    </div>
+    <div class="col-md-3">
+        <select name="kind" class="form-select">
+            <option value="">Все типы</option>
+            @foreach (var k in kinds)
+            {
+                <option value="@k" selected="@(ViewBag.Kind?.ToString() == k.ToString())">
+                    @k.GetDisplayName()
+                </option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <div class="form-check mt-2">
+            <input type="checkbox" name="includeInactive" value="true"
+                   class="form-check-input" id="includeInactive"
+                   checked="@(ViewBag.IncludeInactive == true)" />
+            <label class="form-check-label" for="includeInactive">Показать неактивные</label>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-secondary w-100">Фильтр</button>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Сезоны не найдены.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Тип</th>
+                <th>Название</th>
+                <th>Перевод</th>
+                <th>Внешний код</th>
+                <th>Этикетка</th>
+                <th>Истекает</th>
+                <th>Активен</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr class="@(s.IsActive ? "" : "text-muted")">
+                    <td>@s.Kind.GetDisplayName()</td>
+                    <td>@s.Name</td>
+                    <td>@s.Translate</td>
+                    <td>@s.ExternalCode</td>
+                    <td>@s.LabelName</td>
+                    <td>@s.ExpireDate?.ToString("dd.MM.yyyy")</td>
+                    <td>
+                        @if (s.IsActive)
+                        {
+                            <span class="badge bg-success">Да</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Нет</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@s.Id" class="btn btn-sm btn-outline-secondary">Детали</a>
+                        <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-primary">Изменить</a>
+                        @if (s.IsActive)
+                        {
+                            <a asp-action="Deactivate" asp-route-id="@s.Id" class="btn btn-sm btn-outline-danger">Деактивировать</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
