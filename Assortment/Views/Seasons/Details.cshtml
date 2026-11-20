@@ -42,8 +42,8 @@
     <dt class="col-sm-3">Обновлён</dt>
     <dd class="col-sm-9">@(Model.UpdatedAt?.ToString("dd.MM.yyyy HH:mm") ?? "—")</dd>
 
-    <dt class="col-sm-3">ID</dt>
-    <dd class="col-sm-9"><code>@Model.Id</code></dd>
+  @*   <dt class="col-sm-3">ID</dt>
+    <dd class="col-sm-9"><code>@Model.Id</code></dd> *@
 </dl>
 
 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Изменить</a>

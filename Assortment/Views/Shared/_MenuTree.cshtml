@@ -1,0 +1,37 @@
+﻿@model List<Assortment.Web.ViewComponents.MenuItem>
+
+@foreach (var item in Model)
+{
+    <li class="nav-item">
+        @if (item.IsGroup)
+        {
+            @* Заголовок группы *@
+            <span class="nav-group-label text-uppercase small text-muted d-block mt-2 mb-1">
+                @item.Title
+            </span>
+            @if (item.Children.Count > 0)
+            {
+                <ul class="nav flex-column ms-2">
+                    <partial name="_MenuTree" model="item.Children" />
+                </ul>
+            }
+        }
+        else if (item.Children.Count > 0)
+        {
+            @* Раздел с иконкой и подпунктами (например, «Модели») *@
+            <span class="nav-link fw-bold px-0">
+                <i class="@item.Icon"></i> @item.Title
+            </span>
+            <ul class="nav flex-column ms-2">
+                <partial name="_MenuTree" model="item.Children" />
+            </ul>
+        }
+        else
+        {
+            @* Обычная ссылка *@
+            <a class="nav-link py-1 ps-3" asp-controller="@item.Controller" asp-action="@item.Action">
+                @item.Title
+            </a>
+        }
+    </li>
+}

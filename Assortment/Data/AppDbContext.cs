@@ -7,6 +7,7 @@ namespace Assortment.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public DbSet<Currency> Currencies { get; set; } = default!;
         public DbSet<Season> Seasons => Set<Season>();
         public DbSet<Region> Regions => Set<Region>();
         public DbSet<Country> Countries => Set<Country>();
@@ -21,6 +22,8 @@ namespace Assortment.Data
         public DbSet<Factory> Factories => Set<Factory>();
         public DbSet<CounterpartyFactory> CounterpartyFactories => Set<CounterpartyFactory>();
         public DbSet<FactoryImporterBeneficiary> FactoryImporterBeneficiaries => Set<FactoryImporterBeneficiary>();
+        public DbSet<LargePhoto> LargePhotos => Set<LargePhoto>();
+
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -121,6 +124,7 @@ namespace Assortment.Data
                 e.HasIndex(x => new { x.CollectionId, x.IsActive });
                 e.HasOne(x => x.Collection).WithMany()
                     .HasForeignKey(x => x.CollectionId).OnDelete(DeleteBehavior.Restrict);
+                e.Property(m => m.Thumbnail).HasColumnType("varbinary(max)");
             });
 
             b.Entity<ModelMaterial>(e =>
@@ -210,6 +214,34 @@ namespace Assortment.Data
                 e.HasOne(x => x.Beneficiary).WithMany(c => c.BeneficiaryRules)
                     .HasForeignKey(x => x.BeneficiaryId).OnDelete(DeleteBehavior.Restrict);
             });
+
+            // ---------- Currency ----------
+
+            b.Entity<Currency>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.Property(x => x.IsoCode).HasMaxLength(3).IsRequired();
+                e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+                e.Property(x => x.Symbol).HasMaxLength(10);
+
+                e.HasIndex(x => x.IsoCode).IsUnique();
+                e.HasData(SeedCurrencies());
+            });
+
+            // ---------- LargePhoto ----------
+            b.Entity<LargePhoto>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.Property(x => x.Data).HasColumnType("varbinary(max)").IsRequired();
+
+                // 1:1 Model -> LargePhoto
+                e.HasOne(x => x.Model)
+                    .WithOne(m => m.LargePhoto)
+                    .HasForeignKey<LargePhoto>(x => x.ModelId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasIndex(x => x.ModelId).IsUnique();
+            });
         }
 
         private static Season[] SeedSeasons() => new[]
@@ -274,5 +306,24 @@ namespace Assortment.Data
                 Translate = "Middle East", ExternalCode = "ME", IsActive = true,
                 CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) }
         };
+        private static Currency[] SeedCurrencies() => new[]
+        {
+            new Currency { Id = Guid.Parse("CCCCCCCC-0001-0001-0001-000000000001"),
+                IsoCode = "USD", Name = "Доллар США",   Symbol = "$",  DecimalPlaces = 2, IsActive = true,
+                CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
+            new Currency { Id = Guid.Parse("CCCCCCCC-0002-0002-0002-000000000002"),
+                IsoCode = "CNY", Name = "Юань",          Symbol = "¥",  DecimalPlaces = 2, IsActive = true,
+                CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
+            new Currency { Id = Guid.Parse("CCCCCCCC-0003-0003-0003-000000000003"),
+                IsoCode = "EUR", Name = "Евро",          Symbol = "€",  DecimalPlaces = 2, IsActive = true,
+                CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
+            new Currency { Id = Guid.Parse("CCCCCCCC-0004-0004-0004-000000000004"),
+                IsoCode = "BYN", Name = "Белорусский рубль", Symbol = "Br", DecimalPlaces = 2, IsActive = true,
+                CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) },
+            new Currency { Id = Guid.Parse("CCCCCCCC-0005-0005-0005-000000000005"),
+                IsoCode = "RUB", Name = "Российский рубль", Symbol = "₽", DecimalPlaces = 2, IsActive = true,
+                CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero) }
+        };
+
     }
 }

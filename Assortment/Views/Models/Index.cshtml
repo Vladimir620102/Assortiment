@@ -13,6 +13,9 @@
     <thead>
         <tr>
             <th>
+                @Html.DisplayNameFor(model => model.Thumbnail)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Code)
             </th>
             <th>
@@ -45,6 +48,18 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                    @if (item.Thumbnail != null)
+                {
+                        <img src="@Url.Action("Thumbnail", "Models", new { id = item.Id })"
+                             alt="@item.Code"
+                            style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;" />
+                }
+                else
+                {
+                    <span class="text-muted">—</span>
+                }
+            </td>
             <td>
                 @Html.DisplayFor(model => item.Code)
             </td>

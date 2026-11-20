@@ -286,6 +286,98 @@ namespace Assortment.Migrations
                     b.ToTable("Countries");
                 });
 
+            modelBuilder.Entity("Assortment.Domain.Entities.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("DecimalPlaces")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("IsoCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsoCode")
+                        .IsUnique();
+
+                    b.ToTable("Currencies");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("cccccccc-0001-0001-0001-000000000001"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsoCode = "USD",
+                            Name = "Доллар США",
+                            Symbol = "$"
+                        },
+                        new
+                        {
+                            Id = new Guid("cccccccc-0002-0002-0002-000000000002"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsoCode = "CNY",
+                            Name = "Юань",
+                            Symbol = "¥"
+                        },
+                        new
+                        {
+                            Id = new Guid("cccccccc-0003-0003-0003-000000000003"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsoCode = "EUR",
+                            Name = "Евро",
+                            Symbol = "€"
+                        },
+                        new
+                        {
+                            Id = new Guid("cccccccc-0004-0004-0004-000000000004"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsoCode = "BYN",
+                            Name = "Белорусский рубль",
+                            Symbol = "Br"
+                        },
+                        new
+                        {
+                            Id = new Guid("cccccccc-0005-0005-0005-000000000005"),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsoCode = "RUB",
+                            Name = "Российский рубль",
+                            Symbol = "₽"
+                        });
+                });
+
             modelBuilder.Entity("Assortment.Domain.Entities.Factory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -392,6 +484,40 @@ namespace Assortment.Migrations
                     b.ToTable("FactoryImporterBeneficiaries");
                 });
 
+            modelBuilder.Entity("Assortment.Domain.Entities.LargePhoto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("Data")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ModelId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModelId")
+                        .IsUnique();
+
+                    b.ToTable("LargePhotos");
+                });
+
             modelBuilder.Entity("Assortment.Domain.Entities.Material", b =>
                 {
                     b.Property<Guid>("Id")
@@ -455,6 +581,12 @@ namespace Assortment.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("Thumbnail")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("ThumbnailContentType")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
@@ -802,6 +934,17 @@ namespace Assortment.Migrations
                     b.Navigation("Importer");
                 });
 
+            modelBuilder.Entity("Assortment.Domain.Entities.LargePhoto", b =>
+                {
+                    b.HasOne("Assortment.Domain.Entities.Model", "Model")
+                        .WithOne("LargePhoto")
+                        .HasForeignKey("Assortment.Domain.Entities.LargePhoto", "ModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Model");
+                });
+
             modelBuilder.Entity("Assortment.Domain.Entities.Model", b =>
                 {
                     b.HasOne("Assortment.Domain.Entities.Collection", "Collection")
@@ -866,6 +1009,8 @@ namespace Assortment.Migrations
 
             modelBuilder.Entity("Assortment.Domain.Entities.Model", b =>
                 {
+                    b.Navigation("LargePhoto");
+
                     b.Navigation("Materials");
                 });
 

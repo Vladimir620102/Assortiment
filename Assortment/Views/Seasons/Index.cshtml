@@ -64,7 +64,7 @@ else
                 <th>Перевод</th>
                 <th>Внешний код</th>
                 <th>Этикетка</th>
-                <th>Истекает</th>
+                @* <th>Истекает</th> *@
                 <th>Активен</th>
                 <th></th>
             </tr>
@@ -78,7 +78,7 @@ else
                     <td>@s.Translate</td>
                     <td>@s.ExternalCode</td>
                     <td>@s.LabelName</td>
-                    <td>@s.ExpireDate?.ToString("dd.MM.yyyy")</td>
+                    @* <td>@s.ExpireDate?.ToString("dd.MM.yyyy")</td> *@
                     <td>
                         @if (s.IsActive)
                         {

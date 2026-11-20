@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Assortment.Domain.Entities;
 
@@ -6,8 +7,9 @@ public enum Gender
 {
     [Display(Name = "Мужской")] Male = 1,
     [Display(Name = "Женский")] Female = 2,
-    [Display(Name = "Унисекс")] Unisex = 3,
-    [Display(Name = "Детский")] Kids = 4
+    [Display(Name = "Мальчики")] Boy = 3,
+    [Display(Name = "Девочки")] Girl = 4,
+    [Display(Name = "Нет пола")] Unisex = 5,
 }
 
 public class Model
@@ -34,4 +36,12 @@ public class Model
     public DateTimeOffset? UpdatedAt { get; set; }
 
     public ICollection<ModelMaterial> Materials { get; set; } = new List<ModelMaterial>();
+
+    // Миниатюра 200x200 хранится прямо в модели
+    [DisplayName("Фото")]
+    public byte[]? Thumbnail { get; set; }
+    public string? ThumbnailContentType { get; set; } // "image/jpeg"
+
+    // Навигация на большое фото (1:1)
+    public LargePhoto? LargePhoto { get; set; }
 }

@@ -1,0 +1,41 @@
+﻿@model Model
+@{
+    ViewData["Title"] = $"Фото модели {Model.Code}";
+}
+
+<h1>Фото модели @Model.Code — @Model.Name</h1>
+
+@if (Model.Thumbnail != null)
+{
+    <div class="mb-3">
+        <p>Текущее фото:</p>
+        <img src="@Url.Action("Thumbnail", "Models", new { id = Model.Id })"
+             alt="Фото @Model.Code"
+             style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; padding: 4px;" />
+        <br />
+        <a href="@Url.Action("Photo", "Models", new { id = Model.Id })" target="_blank">
+            Открыть большое фото (@(Model.LargePhoto?.Width) × @(Model.LargePhoto?.Height))
+        </a>
+    </div>
+}
+else
+{
+    <p class="text-muted">Фото ещё не загружено.</p>
+}
+
+<form asp-action="UploadPhoto" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="col-md-6">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label for="file" class="form-label">Выберите файл изображения</label>
+        <input type="file" name="file" id="file" class="form-control" accept="image/*,.heic,.heif" required />
+        <div class="form-text">Поддерживаются JPEG, PNG, WebP и HEIC (с iPhone). Максимум 20 МБ.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Загрузить</button>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary">Назад к модели</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

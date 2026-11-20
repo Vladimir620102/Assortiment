@@ -1,15 +1,25 @@
 
 using Assortment.Data;
 using Assortment.Domain.Entities;
+using Assortment.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using SixLabors.ImageSharp;
 
 public class ModelsController : Controller
 {
 
     private readonly AppDbContext _db;
-    public ModelsController(AppDbContext db) => _db = db;
+    private readonly ImageProcessingService _imageService;
+    public ModelsController(AppDbContext db, ImageProcessingService imageService)
+    {
+        {
+            _db = db;
+            _imageService = imageService;
+        }
+    }
 
     public async Task<IActionResult> Index(bool includeInactive = false, Guid? collectionId = null, CancellationToken ct = default)
     {
@@ -152,5 +162,106 @@ public class ModelsController : Controller
         ViewBag.AllMaterials = new SelectList(
             await _db.Materials.Where(m => m.IsActive).OrderBy(m => m.Name).ToListAsync(ct),
             "Id", "Name");
+    }
+
+    // GET: /Models/UploadPhoto/{id}
+    public async Task<IActionResult> UploadPhoto(Guid id, CancellationToken ct)
+    {
+        var model = await _db.Models
+            .Include(m => m.LargePhoto)
+            .FirstOrDefaultAsync(m => m.Id == id, ct);
+
+        return model is null ? NotFound() : View(model);
+    }
+
+    // POST: /Models/UploadPhoto/{id}
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadPhoto(Guid id, IFormFile file, CancellationToken ct)
+    {
+        var model = await _db.Models
+           .Include(m => m.LargePhoto)
+           .FirstOrDefaultAsync(m => m.Id == id, ct);
+
+        if (model is null) return NotFound();
+        if (file is null || file.Length == 0)
+        {
+            TempData["Error"] = "Выберите файл изображения";
+            return RedirectToAction(nameof(UploadPhoto), new { id });
+        }
+        if (file.Length > 20 * 1024 * 1024) // 20 МБ на исходник
+        {
+            TempData["Error"] = "Файл слишком большой (максимум 20 МБ)";
+            return RedirectToAction(nameof(UploadPhoto), new { id });
+        }
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var (thumb, large, w, h) = await _imageService.ProcessAsync(stream, ct);
+
+            model.Thumbnail = thumb;
+            model.ThumbnailContentType = "image/jpeg";
+
+            if (model.LargePhoto is null)
+            {
+                model.LargePhoto = new LargePhoto
+                {
+                    ModelId = model.Id,
+                    Data = large,
+                    ContentType = "image/jpeg",
+                    Width = w,
+                    Height = h,
+                    UploadedAt = DateTimeOffset.UtcNow
+                };
+            }
+            else
+            {
+                model.LargePhoto.Data = large;
+                model.LargePhoto.ContentType = "image/jpeg";
+                model.LargePhoto.Width = w;
+                model.LargePhoto.Height = h;
+                model.LargePhoto.UploadedAt = DateTimeOffset.UtcNow;
+            }
+
+            await _db.SaveChangesAsync(ct);
+            TempData["Success"] = "Фото модели загружено";
+        }
+        catch (UnknownImageFormatException)
+        {
+            TempData["Error"] = "Не удалось распознать формат файла. Загрузите изображение (JPEG, PNG, HEIC, WebP).";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Ошибка при обработке изображения: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(Edit), new { id });
+    }
+
+    // GET: /Models/Thumbnail/{id}  — отдача миниатюры из БД
+    [AllowAnonymous]
+    public async Task<IActionResult> Thumbnail(Guid id, CancellationToken ct)
+    {
+        var data = await _db.Models
+            .Where(m => m.Id == id)
+            .Select(m => new { m.Thumbnail, m.ThumbnailContentType })
+            .FirstOrDefaultAsync(ct);
+
+        return data?.Thumbnail is null
+            ? NotFound()
+            : File(data.Thumbnail, data.ThumbnailContentType ?? "image/jpeg");
+    }
+
+    // GET: /Models/Photo/{id}  — отдача большого фото из LargePhoto
+    [AllowAnonymous]
+    public async Task<IActionResult> Photo(Guid id, CancellationToken ct)
+    {
+        var photo = await _db.LargePhotos
+            .Where(p => p.ModelId == id)
+            .Select(p => new { p.Data, p.ContentType })
+            .FirstOrDefaultAsync(ct);
+
+        return photo is null
+            ? NotFound()
+            : File(photo.Data, photo.ContentType);
     }
 }
